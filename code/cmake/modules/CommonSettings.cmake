@@ -1,0 +1,100 @@
+# ============================================================================
+# CommonSettings.cmake
+# 项目通用编译选项、编译缓存和链接器设置。
+# ============================================================================
+
+# g_apply_compile_options(<TARGET>)
+# 为 TARGET 应用通用优化与警告选项。
+# - 导入目标使用 INTERFACE，普通目标使用 PRIVATE。
+# - Debug 下禁用优化；Release 等使用 O2。
+# - MSVC 与 GCC/Clang 分别设置对应警告。
+function(g_apply_compile_options TARGET)
+    get_target_property(_imported ${TARGET} IMPORTED)
+    if (_imported)
+        set(_visibility INTERFACE)
+    else ()
+        set(_visibility PRIVATE)
+    endif ()
+
+    target_compile_options(${TARGET} ${_visibility}
+            # 通用优化
+            $<IF:$<CONFIG:Debug>,
+            $<IF:$<CXX_COMPILER_ID:MSVC>, /Od, -O0>,  # Debug 模式下禁用优化
+            $<IF:$<CXX_COMPILER_ID:MSVC>, /O2, -O2>
+            >
+
+            # 编译器警告
+            $<IF:$<CXX_COMPILER_ID:MSVC>,
+            /diagnostics:caret  # 让错误和警告信息在控制台输出时，精准显示一个插入符号（^）指向出错的具体列位置，极大提升排查错误的效率。
+            /Zc:__cplusplus     # MSVC 默认不报告符合标准的 __cplusplus 宏值（默认为 199711L）。加上此选项后，编译器会根据 /std:c++latest 等标准返回正确的值（如 202002L），用于让依赖此宏的第三方库正确识别 C++ 版本。
+            /wd4819             # 禁用警告 C4819。该警告通常指源文件包含无法在当前代码页（如中文 GBK）中表示的字符，保留此选项用于兼容旧代码。
+            /bigobj             # 允许生成的 .obj 目标文件包含超过 65535 个节（section）。必须开启，否则会报链接错误。
+            /utf-8              # 将编译器的源字符集和执行字符集都设置为 UTF-8，确保源码中的中文等 Unicode 字符被正确处理，避免乱码或编译错误。
+            /MP                 # 多处理器编译。编译时启用多进程并行处理源文件，显著加快大型项目的构建速度。
+            ,
+            -Wall -Wextra  # 启用常见警告和额外警告。
+            >
+    )
+endfunction()
+
+# enable_compiler_cache()
+# 优先查找 sccache，其次 ccache，并设置 CMAKE_<LANG>_COMPILER_LAUNCHER。
+macro(enable_compiler_cache)
+    find_program(SCCACHE_PROGRAM sccache)
+
+    if (SCCACHE_PROGRAM)
+        set(CMAKE_CXX_COMPILER_LAUNCHER ${SCCACHE_PROGRAM} CACHE STRING "" FORCE)
+        set(CMAKE_C_COMPILER_LAUNCHER ${SCCACHE_PROGRAM} CACHE STRING "" FORCE)
+
+        g_l_info_fmt(ICommonSettings0 "sccache" "${CMAKE_CXX_COMPILER_LAUNCHER}")
+    else ()
+        find_program(CCACHE_PROGRAM ccache)
+
+        if (CCACHE_PROGRAM)
+            set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE STRING "" FORCE)
+            set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE STRING "" FORCE)
+
+            g_l_info_fmt(ICommonSettings0 "ccache" "${CMAKE_CXX_COMPILER_LAUNCHER}")
+        endif ()
+    endif ()
+endmacro()
+
+# limit_linked_memory()
+# 限制链接阶段并行任务数，降低内存峰值。
+macro(limit_linked_memory)
+    if (NOT DEFINED CMAKE_JOB_POOL_LINK)
+        set(CMAKE_JOB_POOL_LINK "link_job" CACHE STRING "" FORCE)
+    endif ()
+    if (NOT DEFINED CMAKE_JOB_POOLS)
+        set(CMAKE_JOB_POOLS "link_job=3" CACHE STRING "" FORCE)
+    endif ()
+endmacro()
+
+# auto_find_linker()
+# 自动优先使用 mold，其次 lld。
+# 仅修改可执行文件和共享库链接标志，避免影响 MODULE 库（pybind11/N-API）。
+function(auto_find_linker)
+    find_program(MOLD_EXE mold)
+
+    if (MOLD_EXE AND NOT DEFINED CMAKE_LINKER_TYPE)
+        if (NOT CMAKE_EXE_LINKER_FLAGS MATCHES "-fuse-ld=mold")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=mold" CACHE STRING "" FORCE)
+        endif ()
+        if (NOT CMAKE_SHARED_LINKER_FLAGS MATCHES "-fuse-ld=mold")
+            set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=mold" CACHE STRING "" FORCE)
+        endif ()
+        g_l_info_fmt(ICommonSettings0 "mold" "${MOLD_EXE}")
+    else ()
+        find_program(LLD_EXE lld)
+
+        if (LLD_EXE AND NOT DEFINED CMAKE_LINKER_TYPE)
+            if (NOT CMAKE_EXE_LINKER_FLAGS MATCHES "-fuse-ld=lld")
+                set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld" CACHE STRING "" FORCE)
+            endif ()
+            if (NOT CMAKE_SHARED_LINKER_FLAGS MATCHES "-fuse-ld=lld")
+                set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld" CACHE STRING "" FORCE)
+            endif ()
+            g_l_info_fmt(ICommonSettings0 "lld" "${LLD_EXE}")
+        endif ()
+    endif ()
+endfunction()
