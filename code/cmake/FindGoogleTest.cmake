@@ -66,8 +66,9 @@ if (NOT TARGET gtest)
 
         # 使用 Populate（而非 MakeAvailable）以直接 add_subdirectory，
         # 避免 FetchContent 在源码已存在时重复 update。
-        FetchContent_Populate(googletest)
+        FetchContent_MakeAvailable(googletest)
         set(_gtest_source_dir "${googletest_SOURCE_DIR}")
+        set(_gtest_made_available TRUE)
         set(GoogleTest_DIR "${googletest_SOURCE_DIR}" CACHE PATH ${_DIR_DOC} FORCE)
 
     else ()
@@ -77,14 +78,16 @@ if (NOT TARGET gtest)
     endif ()
 
 
-    if (_gtest_source_dir)
+    # 仅在“复用已有源码”分支才手动 add_subdirectory
+    if (_gtest_source_dir AND NOT _gtest_made_available)
         add_subdirectory("${_gtest_source_dir}" "${_gtest_binary_dir}" EXCLUDE_FROM_ALL)
+    endif ()
 
-        if (TARGET gtest)
-            g_l_info(IGoogleTest2)
-        else ()
-            g_l_warning(WGoogleTest0)
-        endif ()
+    # 无论哪条路径，最后统一检查 gtest target
+    if (TARGET gtest)
+        g_l_info(IGoogleTest2)
+    else ()
+        g_l_warning(WGoogleTest0)
     endif ()
 
 endif ()

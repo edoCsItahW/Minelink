@@ -8,12 +8,7 @@
 
 
 # ---- CMakeLists.txt 选项说明 ----
-set(G_DC0 "启用ccache/sccache")
-set(G_DC1 "启用并行编译")
-set(G_DC2 "启用工件缓存")
-set(G_DC3 "启用三方依赖缓存")
-set(G_DC4 "启用链接内存限制")
-set(G_DC5 "启用自寻连接器")
+set(G_DC1 "启用三方依赖缓存")
 
 # ---- CommonSettings ----
 set(G_ICommonSettings0 "使用'{0}'，位于'{1}'")
