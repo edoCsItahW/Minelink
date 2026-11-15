@@ -6,29 +6,18 @@
 // permission, please contact the author: edocsitahw@qq.com
 
 /**
- * @file writer.decl.cxx
+ * @file types.cxx
  * @author edocsitahw
  * @version 1.1
- * @date 2026/11/15 16:16
+ * @date 2026/11/15 15:25
  * @brief
  * @copyright CC BY-NC-SA 2026. All rights reserved.
  * */
-export module protocol:writer.decl;
+export module protocol:types;
 
-import std;
-
-export namespace minelink::protocol {
-
-    class Writer {
-    public:
-        constexpr explicit Writer(std::span<std::byte> buffer) noexcept;
-
-        template<typename T>
-        bool write(const T& value) noexcept;
-
-    private:
-        std::span<std::byte> buffer_;
-        std::size_t pos_{0};
-    };
-
-}  // namespace minelink::protocol
+export import :varint.decl;
+export import :varlong.decl;
+export import :string.decl;
+export import :boolean.decl;
+export import :numeric.decl;
+export import :numeric.impl;
