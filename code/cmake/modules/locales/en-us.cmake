@@ -7,12 +7,7 @@
 # --------------------------------------------------------------
 
 # ---- CMakeLists.txt 选项说明 ----
-set(G_DC0 "Enable ccache/sccache")
-set(G_DC1 "Enable parallel builds")
-set(G_DC2 "Enable artifact caching for components")
-set(G_DC3 "Enable third-party dependency caching")
-set(G_DC4 "Enable linked memory limit")
-set(G_DC5 "Enable automatic link finder")
+set(G_DC1 "Enable third-party dependency caching")
 
 # ---- CommonSettings ----
 set(G_ICommonSettings0 "Using '{0}', with '{1}'")

@@ -165,7 +165,7 @@ endfunction()
 
 # resolve_feature_tree(<ROOT>)
 # 解析 <ROOT>_CHILDREN 特性树，生成 <ROOT> 及子路径的缓存变量和 ANY_* 变量。
-macro(resolve_feature_tree ROOT)
+macro(g_resolve_feature_tree ROOT)
     _dfs(${ROOT} OFF "")
 
     get_cmake_property(_vars CACHE_VARIABLES)
