@@ -14,11 +14,15 @@
  * @copyright CC BY-NC-SA 2026. All rights reserved.
  * */
 export module protocol:wire.decl;
+export import base;
 
 import std;
-import base;
 
 export namespace minelink::protocol {
+
+    inline constexpr auto SEGMENT_BITS = 0x7Fu;
+
+    inline constexpr auto CONTINUE_BITS = 0x80u;
 
     template<typename>
     struct wire_type_tag_t {};
@@ -31,8 +35,12 @@ export namespace minelink::protocol {
     struct wire_read_t {};
 
     template<typename T>
-    auto wire_read(const std::byte*& current, const std::byte* end) noexcept
-        -> std::expected<T, WireError>;
+    std::expected<T, WireError> wire_read(const std::byte*& current, const std::byte* end) noexcept;
+
+    template<typename T>
+    std::expected<T, WireError> globalTagInvoke(
+        wire_read_t, wire_type_tag_t<T>, const std::byte*& current, const std::byte* end
+    );
 
     // Writer
 
@@ -40,14 +48,6 @@ export namespace minelink::protocol {
 
     template<typename T>
     bool wire_write(std::byte*& current, std::byte* end, const T& value) noexcept;
-
-    // globalTagInvoke
-
-
-    template<typename T>
-    auto globalTagInvoke(
-        wire_read_t, wire_type_tag_t<T>, const std::byte*& current, const std::byte* end
-    ) -> std::expected<T, WireError>;
 
     template<typename T>
     bool globalTagInvoke(

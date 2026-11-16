@@ -23,6 +23,12 @@ export namespace minelink::protocol {
     constexpr Writer::Writer(std::span<std::byte> buffer) noexcept
         : buffer_(buffer) {}
 
+    constexpr std::size_t Writer::size() const noexcept { return pos_; }
+
+    constexpr std::span<const std::byte> Writer::bytes() const noexcept {
+        return buffer_.first(pos_);
+    }
+
     template<typename T>
     bool Writer::write(const T& value) noexcept {
         std::byte* current = buffer_.data() + pos_;
@@ -30,7 +36,7 @@ export namespace minelink::protocol {
         std::byte* const end = buffer_.data() + buffer_.size();
         if (!wire_write<T>(current, end, value)) return false;
 
-        pos_ = static_cast<std::size_t>(end - buffer_.data());
+        pos_ = static_cast<std::size_t>(current - buffer_.data());
 
         return true;
     }

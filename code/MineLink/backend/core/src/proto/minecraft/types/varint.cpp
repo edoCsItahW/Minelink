@@ -6,36 +6,25 @@
 // permission, please contact the author: edocsitahw@qq.com
 
 /**
- * @file variant.impl.cxx
+ * @file varint.cpp
  * @author edocsitahw
  * @version 1.1
- * @date 2026/11/15 15:24
+ * @date 2026/11/15 20:32
  * @brief
  * @copyright CC BY-NC-SA 2026. All rights reserved.
  * */
-export module protocol:variant.impl;
+module protocol;
 
-import :variant.decl;
+import :varint.decl;
+import std;
 
-export namespace minelink::protocol {
-
-    inline constexpr auto SEGMENT_BITS = 0x7Fu;
-
-    inline constexpr auto CONTINUE_BITS = 0x80u;
-
-    namespace detail {
-
-        [[nodiscard]] constexpr std::size_t varIntSize(std::uint32_t value) noexcept {
-            return (static_cast<std::size_t>(std::bit_width(value | 1u)) + 6u) / 7u;
-        }
-
-    }  // namespace detail
+namespace minelink::protocol {
 
     // read
 
-    auto globalTagInvoke(
-        wire_read_t, wire_type_tag_t<std::int32_t>, const std::byte*& current, const std::byte* end
-    ) noexcept -> std::expected<std::int32_t, WireError> {
+    std::expected<std::int32_t, WireError> readVarInt(
+        const std::byte*& current, const std::byte* end
+    ) noexcept {
         using enum WireError;
 
         // 成功才写回
@@ -78,17 +67,20 @@ export namespace minelink::protocol {
         return static_cast<std::int32_t>(result);
     }
 
+    std::expected<std::int32_t, WireError> globalTagInvoke(
+        wire_read_t, wire_type_tag_t<std::int32_t>, const std::byte*& current, const std::byte* end
+    ) noexcept {
+        return readVarInt(current, end);
+    }
+
     // write
 
-    bool globalTagInvoke(
-        wire_write_t, wire_type_tag_t<std::int32_t>, std::byte*& current, std::byte* end,
-        const std::int32_t& value
-    ) noexcept {
+    bool writeVarInt(std::byte*& current, std::byte* end, const std::int32_t& value) noexcept {
         using enum WireError;
 
         auto unsign = static_cast<std::uint32_t>(value);
 
-        const std::size_t num = detail::varIntSize(unsign);
+        const std::size_t num = varIntSize(unsign);
 
         if (static_cast<std::size_t>(end - current) < num) return false;
 
@@ -104,6 +96,13 @@ export namespace minelink::protocol {
 
         current = pointer + num;
         return true;
+    }
+
+    bool globalTagInvoke(
+        wire_write_t, wire_type_tag_t<std::int32_t>, std::byte*& current, std::byte* end,
+        const std::int32_t& value
+    ) noexcept {
+        return writeVarInt(current, end, value);
     }
 
 }  // namespace minelink::protocol
