@@ -14,8 +14,14 @@
  * @copyright CC BY-NC-SA 2026. All rights reserved.
  * */
 import std;
+import cli;
 
-int main() {
+int main(int argc, char** argv) {
+    std::vector<std::string_view> tokens;
+    tokens.reserve(static_cast<std::size_t>(argc > 0 ? argc - 1 : 0));
 
-    return 0;
+    for (int i = 1; i < argc; ++i)
+        tokens.emplace_back(argv[i]);
+
+    return minelink::cli::runCommand(tokens);
 }

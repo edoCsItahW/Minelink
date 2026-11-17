@@ -73,6 +73,14 @@ export namespace minelink::protocol {
         return readFloat<T>(current, end);
     }
 
+    /// long
+
+    [[nodiscard]] std::expected<std::int64_t, WireError> readLong(
+        const std::byte*& current, const std::byte* end
+    ) noexcept {
+        return readUInt<std::uint64_t>(current, end);
+    }
+
     // write
 
     /// uint
@@ -117,6 +125,12 @@ export namespace minelink::protocol {
         wire_write_t, wire_type_tag_t<T>, std::byte*& current, std::byte* end, const T& v
     ) noexcept {
         return writeFloat<T>(current, end, v);
+    }
+
+    /// long
+
+    bool writeLong(std::byte*& current, std::byte* end, std::int64_t value) noexcept {
+        return writeUInt<std::uint64_t>(current, end, std::bit_cast<std::uint64_t>(value));
     }
 
 }  // namespace minelink::protocol

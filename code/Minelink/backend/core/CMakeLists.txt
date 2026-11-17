@@ -29,4 +29,4 @@ target_link_options(lib_minelink_core PUBLIC
         $<$<CXX_COMPILER_ID:GNU>:-flto>
 )
 
-target_link_libraries(lib_minelink_core stdc++exp)
+target_link_libraries(lib_minelink_core stdc++exp ws2_32 z)

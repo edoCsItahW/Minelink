@@ -1,0 +1,2 @@
+cmake -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/Program Files/Jetbrains/Clion/CLion2603/bin/ninja/win/x64/ninja.exe" "-DCMAKE_C_COMPILER=D:/Program Files/MSYS2/ucrt64/bin/gcc.exe" "-DCMAKE_CXX_COMPILER=D:/Program Files/MSYS2/ucrt64/bin/g++.exe" -DBUILD=ON -DGLOBAL_LANG=zh-hans -G Ninja -S E:\code\minelink\code -B E:\code\minelink\code\cmake-build-gcc-debug
+cmake --build E:\code\minelink\code\cmake-build-gcc-debug --target Minelink_CLI -j 18
