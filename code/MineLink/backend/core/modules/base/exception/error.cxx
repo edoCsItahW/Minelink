@@ -27,4 +27,19 @@ export namespace minelink {
         InvalidUtf8
     };
 
+    enum class NetError : std::uint8_t {
+        ResolveFailed,
+        ConnectFailed,
+        Timeout,
+        Closed,
+        Io
+    };
+
+    enum class FrameError : std::uint8_t {
+        Truncated,
+        VarIntTooLong,
+        TooLarge,
+        InvalidCompressed
+    };
+
 }

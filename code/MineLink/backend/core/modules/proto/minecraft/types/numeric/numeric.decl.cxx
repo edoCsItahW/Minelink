@@ -46,6 +46,9 @@ export namespace minelink::protocol {
         wire_read_t, wire_type_tag_t<T>, const std::byte*& current, const std::byte* end
     ) noexcept;
 
+    /// long
+    [[nodiscard]] std::expected<std::int64_t, WireError> readLong(const std::byte*& current, const std::byte* end) noexcept;
+
     // write
 
     /// uint
@@ -71,5 +74,8 @@ export namespace minelink::protocol {
     bool globalTagInvoke(
         wire_write_t, wire_type_tag_t<T>, std::byte*& current, std::byte* end, const T& v
     ) noexcept;
+
+    /// long
+    bool writeLong(std::byte*& current, std::byte* end, std::int64_t value) noexcept;
 
 }  // namespace minelink::protocol
