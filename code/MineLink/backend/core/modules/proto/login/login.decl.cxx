@@ -79,14 +79,26 @@ export namespace minelink::protocol {
 
         [[nodiscard]] std::uint64_t ignoredPackets() const noexcept;
 
+        using PacketHandler = std::function<void(std::int32_t id, std::span<const std::byte> body)>;
+
+        void setPacketHandler(PacketHandler handler);
+
+        [[nodiscard]] const std::array<std::uint64_t, 256>& packetCounts() const noexcept;
+
+        [[nodiscard]] std::uint64_t dispatchedPackets() const noexcept;
+
     private:
         [[nodiscard]] bool drainFrames();
 
-        [[nodiscard]] bool dispatch(std::int32_t id, const std::byte* payload, const std::byte* end);
+        [[nodiscard]] bool dispatch(
+            std::int32_t id, const std::byte* payload, const std::byte* end
+        );
 
         [[nodiscard]] bool sendPacket(std::int32_t id, std::span<const std::byte> body);
 
-        [[nodiscard]] bool onPlayPacket(std::int32_t id, const std::byte* payload, const std::byte* end);
+        [[nodiscard]] bool onPlayPacket(
+            std::int32_t id, const std::byte* payload, const std::byte* end
+        );
 
         [[nodiscard]] bool sendClientInformation();
 
@@ -107,6 +119,7 @@ export namespace minelink::protocol {
         std::string closeReason_;
 
         std::uint64_t ignoredPackets_{0};
+        std::uint64_t dispatchedPackets_{0};
 
         std::vector<std::byte> in_;
 
@@ -115,6 +128,10 @@ export namespace minelink::protocol {
         std::vector<std::byte> out_;
 
         std::chrono::steady_clock::time_point lastKeepAlive_{};
+
+        PacketHandler packetHandler_{};
+
+        std::array<std::uint64_t, 256> packetCounts_{};
     };
 
 }  // namespace minelink::protocol

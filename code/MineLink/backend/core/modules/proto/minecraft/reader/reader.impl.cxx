@@ -42,4 +42,12 @@ export namespace minelink::protocol {
         return out;
     }
 
+    constexpr auto Reader::take(std::size_t count) noexcept
+        -> std::expected<std::span<const std::byte>, WireError> {
+        if (remaining() < count) return std::unexpected(WireError::Truncated);
+        const std::span out{current_, count};
+        current_ += count;
+        return out;
+    }
+
 }  // namespace minelink::protocol

@@ -31,6 +31,10 @@ export namespace minelink::protocol {
         template<typename T>
         auto read() noexcept -> std::expected<T, WireError>;
 
+        [[nodiscard]] constexpr std::expected<std::span<const std::byte>, WireError> take(
+            std::size_t count
+        ) noexcept;
+
     private:
         const std::byte* current_;
         const std::byte* end_;
