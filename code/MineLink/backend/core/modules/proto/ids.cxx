@@ -50,17 +50,24 @@ export namespace minelink::protocol {
         inline constexpr std::int32_t config_s2c_keep_alive           = 0x03;
 
         // play / to_server
-        inline constexpr std::int32_t play_c2s_teleport_confirm = 0x00;
-        inline constexpr std::int32_t play_c2s_keep_alive       = 0x15;
-        inline constexpr std::int32_t play_c2s_position         = 0x17;
-        inline constexpr std::int32_t play_c2s_position_look    = 0x18;
+        inline constexpr std::int32_t play_c2s_teleport_confirm     = 0x00;
+        inline constexpr std::int32_t play_c2s_keep_alive           = 0x15;
+        inline constexpr std::int32_t play_c2s_position             = 0x17;
+        inline constexpr std::int32_t play_c2s_position_look        = 0x18;
+        inline constexpr std::int32_t play_c2s_chunk_batch_received = 0x07;
 
         // play / to_client（只列出 Step 2 关心的）
-        inline constexpr std::int32_t play_s2c_kick_disconnect = 0x1b;
-        inline constexpr std::int32_t play_s2c_keep_alive      = 0x24;
-        inline constexpr std::int32_t play_s2c_login           = 0x29;
-        inline constexpr std::int32_t play_s2c_position        = 0x3e;
-        inline constexpr std::int32_t play_s2c_update_health   = 0x5b;
+        inline constexpr std::int32_t play_s2c_kick_disconnect      = 0x1b;
+        inline constexpr std::int32_t play_s2c_keep_alive           = 0x24;
+        inline constexpr std::int32_t play_s2c_login                = 0x29;
+        inline constexpr std::int32_t play_s2c_position             = 0x3e;
+        inline constexpr std::int32_t play_s2c_update_health        = 0x5b;
+        inline constexpr std::int32_t play_s2c_block_change         = 0x09;
+        inline constexpr std::int32_t play_s2c_multi_block_change   = 0x47;
+        inline constexpr std::int32_t play_s2c_map_chunk            = 0x25;
+        inline constexpr std::int32_t play_s2c_update_light         = 0x28;
+        inline constexpr std::int32_t play_s2c_chunk_batch_finished = 0x0c;
+        inline constexpr std::int32_t play_s2c_chunk_batch_start    = 0x0d;
 
     }  // namespace v1_20_4
 

@@ -31,6 +31,13 @@ if (ANY_BUILD)
 
     add_subdirectory(MineLink)
 
+    if (BUILD_CORE)
+
+        set(MINECRAFT_DATA_INSTALL_PREFIX "${GLOBAL_DEP_CACHE_DIR}")
+        find_package(MinecraftData REQUIRED)
+
+    endif ()
+
     if (ANY_TESTS)
 
         set(GOOGLETEST_INSTALL_PREFIX "${GLOBAL_DEP_CACHE_DIR}")

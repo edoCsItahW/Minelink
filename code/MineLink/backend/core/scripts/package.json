@@ -1,0 +1,28 @@
+{
+    "name": "@minelink/gen-block-states",
+    "version": "1.1.0",
+    "description": "Generate world:block_table from minecraft-data blocks.json",
+    "type": "module",
+    "bin": {
+        "gen-block-states": "./dist/cli.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "dev": "tsx ./src/cli.ts",
+        "gen": "node src/cli.ts \"../../../../third-party/minecraft-data-src/data/pc/1.20.4/blocks.json\" \"../modules/world/generated/block_table.cxx\"",
+        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "test": "vitest run"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.0",
+        "tsx": "^4.19.0",
+        "typescript": "^5.7.0",
+        "vitest": "^2.1.0"
+    },
+    "engines": {
+        "node": ">=20"
+    }
+}

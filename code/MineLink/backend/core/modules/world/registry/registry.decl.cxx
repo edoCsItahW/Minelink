@@ -6,26 +6,29 @@
 // permission, please contact the author: edocsitahw@qq.com
 
 /**
- * @file variant.decl.cxx
+ * @file registry.decl.cxx
  * @author edocsitahw
  * @version 1.1
- * @date 2026/11/15 15:34
+ * @date 2026/11/19 19:12
  * @brief
  * @copyright CC BY-NC-SA 2026. All rights reserved.
  * */
-export module protocol:variant.decl;
+export module world:registry.decl;
 
-import :wire;
+import std;
 
-export namespace minelink::protocol {
+export namespace minelink::world {
 
-    auto globalTagInvoke(
-        wire_read_t, wire_type_tag_t<std::int32_t>, const std::byte*& current, const std::byte* end
-    ) noexcept -> std::expected<std::int32_t, WireError>;
+    struct BlockInfo {
+        std::string_view name;
+        std::uint32_t minState{0};
+        std::uint32_t maxState{0};
+    };
 
-    bool globalTagInvoke(
-        wire_write_t, wire_type_tag_t<std::int32_t>, std::byte*& current, std::byte* end,
-        const std::int32_t& value
-    ) noexcept;
+    [[nodiscard]] const BlockInfo& blockInfo(std::uint32_t stateId) noexcept;
 
-}  // namespace minelink::protocol
+    [[nodiscard]] std::string_view blockName(std::uint32_t stateId) noexcept;
+
+    [[nodiscard]] bool validBlockState(std::uint32_t stateId) noexcept;
+
+}  // namespace minelink::world

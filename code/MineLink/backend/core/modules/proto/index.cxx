@@ -21,3 +21,4 @@ export import :reader;
 export import :writer;
 export import :login;
 export import :frame;
+export import :ids;

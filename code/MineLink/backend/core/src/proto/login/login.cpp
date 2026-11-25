@@ -19,6 +19,8 @@ import :ids;
 
 namespace minelink::protocol {
 
+    constexpr float chunks_per_tick = 16.0f;
+
     constexpr auto keep_alive_timeout = std::chrono::seconds{30};
 
     template<typename... Ts>
@@ -54,7 +56,13 @@ namespace minelink::protocol {
         , in_(options_.readBufferBytes)
         , out_(64 * 1024) {}
 
-    LoginSession::~LoginSession() = default;
+    LoginSession::~LoginSession() {
+        connection_.close();
+    };
+
+    void LoginSession::setPacketHandler(PacketHandler handler) {
+        packetHandler_ = std::move(handler);
+    }
 
     const PlayerState& LoginSession::player() const noexcept { return player_; }
 
@@ -146,6 +154,8 @@ namespace minelink::protocol {
     }  // namespace
 
     bool LoginSession::dispatch(std::int32_t id, const std::byte* payload, const std::byte* end) {
+        if (id >= 0 && id < 256) ++packetCounts_[static_cast<std::size_t>(id)];
+
         const auto span = std::span{payload, static_cast<std::size_t>(end - payload)};
 
         switch (state_) {
@@ -234,6 +244,22 @@ namespace minelink::protocol {
     ) {
         const auto span = std::span{payload, static_cast<std::size_t>(end - payload)};
 
+        if (id == v1_20_4::play_s2c_chunk_batch_finished) {
+            Reader reader{span};
+            (void)reader.read<std::int32_t>();  // batchSize
+
+            std::array<std::byte, 8> body{};
+            const std::size_t size = writeFields(body, 16.0f);
+            if (size == 0
+                || !sendPacket(
+                    v1_20_4::play_c2s_chunk_batch_received, std::span{body.data(), size}
+                ))
+                return fail("Chunk Batch Received发送失败");
+            return true;
+        }
+
+        if (id == v1_20_4::play_s2c_chunk_batch_start) return true;  // 空包，无需回执
+
         if (id == v1_20_4::play_s2c_keep_alive) {
             std::int64_t keepAlive = 0;
             if (!readKeepAliveId(payload, end, keepAlive)) return fail("Keep Alive解析失败");
@@ -292,10 +318,10 @@ namespace minelink::protocol {
 
         if (id == v1_20_4::play_s2c_login) {
             Reader reader{span};
-            const auto entityId = reader.read<std::int32_t>();
+            const auto entityId = reader.read<std::uint32_t>();   // i32 定长 4 字节
             if (!entityId) return fail("Join Game解析失败");
 
-            player_.entityId = *entityId;
+            player_.entityId = std::bit_cast<std::int32_t>(*entityId);
 
             return true;
         }
@@ -312,15 +338,33 @@ namespace minelink::protocol {
 
         if (id == v1_20_4::play_s2c_kick_disconnect) return readDisconnect(payload, end);
 
+        if (id == 0x20) {
+            Reader r{span};
+            const auto reason = r.read<std::uint8_t>();
+            const auto value  = r.read<float>();
+            std::println(
+                "[game_state] reason={} value={}", reason ? static_cast<int>(*reason) : -1,
+                value ? *value : 0.0f
+            );
+            return true;
+        }
+
+        if (packetHandler_) {
+            packetHandler_(id, span);
+            ++dispatchedPackets_;
+            return true;
+        }
+
         if (options_.dumpPackets)
             std::println(
                 "[ignored] state={} id=0x{:02x} size={}", static_cast<int>(state_), id, span.size()
             );
 
         ++ignoredPackets_;
-
         return true;
     }
+
+    std::uint64_t LoginSession::dispatchedPackets() const noexcept { return dispatchedPackets_; }
 
     bool LoginSession::checkAlive(std::chrono::steady_clock::time_point now) {
         if (state_ != LoginState::Play) return true;
